@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Ramazon</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg1:#04241c; --bg2:#0a3d2e; --card:rgba(255,255,255,.07); --line:rgba(230,196,120,.35);
+  --gold:#e6c478; --gold2:#f7e3a8; --text:#f3efe0; --muted:#a9c4b8;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background:radial-gradient(circle at 50% -10%,#14634b 0%,var(--bg2) 40%,var(--bg1) 100%) fixed;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;opacity:.07;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%23e6c478' stroke-width='1.2'%3E%3Cpath d='M40 6l9 22 22-9-9 22 22 9-22 9 9 22-22-9-9 22-9-22-22 9 9-22-22-9 22-9-9-22 22 9z'/%3E%3Ccircle cx='40' cy='40' r='9'/%3E%3C/g%3E%3C/svg%3E")}
+.wrap{position:relative;max-width:520px;margin:0 auto;padding:16px 16px 96px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+select,.lang{background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:10px 12px;font-size:15px;outline:none}
+select option{color:#000}
+.lang{cursor:pointer;font-weight:700;color:var(--gold)}
+.hero{margin-top:14px;text-align:center;padding:22px 16px 20px;border-radius:28px;border:1px solid var(--line);
+  background:linear-gradient(160deg,rgba(255,255,255,.12),rgba(255,255,255,.03));position:relative;overflow:hidden}
+.moon{position:absolute;right:-18px;top:-18px;width:120px;height:120px;opacity:.9;filter:drop-shadow(0 0 18px rgba(247,227,168,.5))}
+.bism{font-size:26px;color:var(--gold2);font-family:"Amiri","Traditional Arabic",serif;margin-bottom:6px}
+.sub{color:var(--muted);font-size:13px;letter-spacing:.4px}
+.next{font-size:20px;margin-top:10px;color:var(--gold)}
+.count{font-size:46px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:1px;margin:2px 0;
+  background:linear-gradient(180deg,var(--gold2),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.ram{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rcard{padding:14px;border-radius:22px;border:1px solid var(--line);text-align:center;background:var(--card)}
+.rcard .ic{font-size:26px}.rcard .t{font-size:26px;font-weight:800;color:var(--gold2);margin-top:2px}
+.rcard .l{font-size:13px;color:var(--muted)}
+.badge{margin-top:14px;text-align:center;padding:12px;border-radius:18px;background:linear-gradient(90deg,rgba(230,196,120,.18),rgba(230,196,120,.05));border:1px dashed var(--line);color:var(--gold2);font-weight:600}
+.list{margin-top:14px;display:flex;flex-direction:column;gap:9px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-radius:18px;background:var(--card);border:1px solid transparent;transition:.2s}
+.row.active{border-color:var(--gold);background:rgba(230,196,120,.14);box-shadow:0 0 22px rgba(230,196,120,.18)}
+.row .n{display:flex;gap:10px;align-items:center;font-size:17px}
+.row .tm{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--gold2)}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+  background:linear-gradient(0deg,#031a14 60%,transparent);z-index:5}
+.tabs .in{display:flex;gap:6px;max-width:496px;width:100%;background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:22px;padding:6px;backdrop-filter:blur(12px)}
+.tab{flex:1;text-align:center;padding:9px 2px;border-radius:16px;font-size:12px;color:var(--muted);cursor:pointer}
+.tab b{display:block;font-size:20px;font-weight:400}
+.tab.on{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#082d22;font-weight:700}
+.page{display:none}.page.on{display:block;animation:f .35s}
+@keyframes f{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+h2{color:var(--gold);font-weight:700;font-size:20px;margin:18px 4px 8px}
+.cal{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:14px}
+.cal th{color:var(--muted);font-weight:500;padding:4px;font-size:12px}
+.cal td{background:var(--card);padding:10px 4px;text-align:center;font-variant-numeric:tabular-nums}
+.cal td:first-child{border-radius:12px 0 0 12px;color:var(--gold);font-weight:700}
+.cal td:last-child{border-radius:0 12px 12px 0}
+.cal tr.today td{background:rgba(230,196,120,.22)}
+.tasbeh{text-align:center;margin-top:18px}
+.tbtn{width:230px;height:230px;border-radius:50%;margin:18px auto;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 35% 30%,#1f8a67,#0b4a37 70%);border:3px solid var(--gold);box-shadow:0 0 0 8px rgba(230,196,120,.12),0 18px 40px rgba(0,0,0,.45);
+  user-select:none;cursor:pointer;transition:transform .08s}
+.tbtn:active{transform:scale(.95)}
+.tbtn .c{font-size:70px;font-weight:800;color:var(--gold2)}
+.small{background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:10px 18px;font-size:14px;margin:4px}
+.dua{padding:16px;border-radius:22px;background:var(--card);border:1px solid var(--line);margin-bottom:12px}
+.dua h3{margin:0 0 8px;color:var(--gold)}
+.ar{font-family:"Amiri","Traditional Arabic",serif;font-size:24px;line-height:2;direction:rtl;text-align:right;color:var(--gold2)}
+.tr{font-size:14px;color:var(--muted);margin-top:6px;line-height:1.5}
+.mn{font-size:15px;margin-top:6px;line-height:1.5}
+.foot{text-align:center;color:var(--muted);font-size:11px;margin-top:20px}
+.err{color:#ffb4a8;text-align:center;padding:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <select id="city"></select>
+    <div class="lang" id="lang">UZ</div>
+  </div>
+
+  <div class="page on" id="p-home">
+    <div class="hero">
+      <svg class="moon" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f7e3a8"/><stop offset="1" stop-color="#d9a93f"/></linearGradient></defs>
+        <path d="M62 12a38 38 0 1 0 26 66A30 30 0 0 1 62 12z" fill="url(#g)"/><path d="M80 18l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z" fill="#f7e3a8"/></svg>
+      <div class="bism">بسم الله الرحمن الرحيم</div>
+      <div class="sub" id="date"></div>
+      <div class="next" id="nextName">…</div>
+      <div class="count" id="count">--:--:--</div>
+      <div class="sub" id="untilTxt"></div>
+    </div>
+    <div class="badge" id="ramBadge"></div>
+    <div class="ram">
+      <div class="rcard"><div class="ic">🌙</div><div class="t" id="sahar">--:--</div><div class="l" id="saharL"></div></div>
+      <div class="rcard"><div class="ic">🌅</div><div class="t" id="iftar">--:--</div><div class="l" id="iftarL"></div></div>
+    </div>
+    <div class="list" id="list"></div>
+  </div>
+
+  <div class="page" id="p-cal">
+    <h2 id="calTitle"></h2>
+    <table class="cal"><thead><tr id="calHead"></tr></thead><tbody id="calBody"></tbody></table>
+  </div>
+
+  <div class="page" id="p-tasbeh">
+    <div class="tasbeh">
+      <h2 id="tsTitle"></h2>
+      <div class="sub" id="tsZikr">سُبْحَانَ اللّٰه</div>
+      <div class="tbtn" id="tbtn"><div class="c" id="tcount">0</div><div class="sub" id="tcycle"></div></div>
+      <button class="small" id="tmode"></button>
+      <button class="small" id="treset"></button>
+    </div>
+  </div>
+
+  <div class="page" id="p-dua">
+    <h2 id="duaTitle"></h2>
+    <div id="duas"></div>
+  </div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<div class="tabs"><div class="in">
+  <div class="tab on" data-p="home"><b>🕌</b><span data-i="tHome"></span></div>
+  <div class="tab" data-p="cal"><b>📅</b><span data-i="tCal"></span></div>
+  <div class="tab" data-p="tasbeh"><b>📿</b><span data-i="tTas"></span></div>
+  <div class="tab" data-p="dua"><b>🤲</b><span data-i="tDua"></span></div>
+</div></div>
+
+<script>
+const tg = window.Telegram && Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); try{tg.setHeaderColor('#04241c');tg.setBackgroundColor('#04241c');}catch(e){} }
+
+const CITIES = {
+  "Toshkent":[41.2995,69.2401,"Ташкент"],"Samarqand":[39.6542,66.9597,"Самарканд"],"Buxoro":[39.7747,64.4286,"Бухара"],
+  "Andijon":[40.7821,72.3442,"Андижан"],"Namangan":[41.0011,71.6683,"Наманган"],"Farg'ona":[40.3864,71.7864,"Фергана"],
+  "Qarshi":[38.8606,65.7891,"Карши"],"Navoiy":[40.0844,65.3792,"Навои"],"Nukus":[42.4531,59.6103,"Нукус"],
+  "Urganch":[41.5506,60.6317,"Ургенч"],"Xiva":[41.3775,60.3640,"Хива"],"Termiz":[37.2242,67.2783,"Термез"],
+  "Jizzax":[40.1158,67.8422,"Джизак"],"Guliston":[40.4897,68.7842,"Гулистан"]
+};
+const KEYS=["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"];
+const ICONS={Fajr:"🌌",Sunrise:"🌄",Dhuhr:"☀️",Asr:"🌤",Maghrib:"🌇",Isha:"🌙"};
+const T={
+ uz:{tHome:"Vaqtlar",tCal:"Taqvim",tTas:"Tasbeh",tDua:"Duolar",Fajr:"Bomdod",Sunrise:"Quyosh",Dhuhr:"Peshin",Asr:"Asr",Maghrib:"Shom",Isha:"Xufton",
+  next:"Keyingi namoz:",left:"gacha qoldi",sahar:"Saharlik (og'iz yopish)",iftar:"Iftor (og'iz ochish)",
+  ramDay:n=>`🌙 Ramazon ${n}-kun`,ramSoon:d=>`🌙 Ramazongacha taxminan ${d} kun`,ramDash:"Ramazon muborak!",
+  cal:"Oylik namoz taqvimi",cd:["Kun","Bomdod","Quyosh","Peshin","Asr","Shom","Xufton"],
+  tas:"Tasbeh",reset:"Tozalash",mode:m=>`Zikr: ${m}`,cycle:n=>`${n} marta aylandi`,duaT:"Duolar",
+  err:"Vaqtlarni yuklab bo'lmadi. Internetni tekshiring.",foot:"Vaqtlar Aladhan API, Hanafiy mazhab bo'yicha. Ozgina farq bo'lishi mumkin, masjid vaqtiga ham qarang.",
+  months:["Yanvar","Fevral","Mart","Aprel","May","Iyun","Iyul","Avgust","Sentabr","Oktabr","Noyabr","Dekabr"]},
+ ru:{tHome:"Время",tCal:"Календарь",tTas:"Тасбих",tDua:"Дуа",Fajr:"Фаджр",Sunrise:"Восход",Dhuhr:"Зухр",Asr:"Аср",Maghrib:"Магриб",Isha:"Иша",
+  next:"Следующий намаз:",left:"осталось",sahar:"Сухур (начало поста)",iftar:"Ифтар (разговение)",
+  ramDay:n=>`🌙 Рамадан, ${n}-й день`,ramSoon:d=>`🌙 До Рамадана примерно ${d} дн.`,ramDash:"Рамадан мубарак!",
+  cal:"Календарь намазов на месяц",cd:["День","Фаджр","Восход","Зухр","Аср","Магриб","Иша"],
+  tas:"Тасбих",reset:"Сбросить",mode:m=>`Зикр: ${m}`,cycle:n=>`кругов: ${n}`,duaT:"Дуа",
+  err:"Не удалось загрузить время. Проверьте интернет.",foot:"Время по Aladhan API, ханафитский мазхаб. Возможна разница в пару минут, ориентируйтесь и на мечеть.",
+  months:["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"]}
+};
+const ZIKR=[["سُبْحَانَ اللّٰه","Subhanalloh",33],["الْحَمْدُ لِلّٰه","Alhamdulillah",33],["اللّٰهُ أَكْبَر","Allohu akbar",34],["لَا إِلٰهَ إِلَّا اللّٰه","La ilaha illalloh",100]];
+const DUAS={
+ uz:[
+  {t:"Saharlik (ro'za niyati)",a:"نَوَيْتُ أَنْ أَصُومَ صَوْمَ شَهْرِ رَمَضَانَ مِنَ الْفَجْرِ إِلَى الْمَغْرِبِ خَالِصًا لِلّٰهِ تَعَالَى",tr:"Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala.",m:"Ramazon oyining ro'zasini subhdan to kun botguncha tutishni niyat qildim, xolis Alloh uchun."},
+  {t:"Iftor duosi",a:"اللَّهُمَّ لَكَ صُمْتُ وَبِكَ آمَنْتُ وَعَلَيْكَ تَوَكَّلْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ",tr:"Allohumma laka sumtu va bika amantu va 'alayka tavakkaltu va 'ala rizqika aftartu.",m:"Ey Alloh, Sen uchun ro'za tutdim, Senga iymon keltirdim, Senga tavakkul qildim va bergan rizqing bilan iftor qildim."},
+  {t:"Iftordan keyin",a:"ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ وَثَبَتَ الْأَجْرُ إِنْ شَاءَ اللّٰهُ",tr:"Zahabaz zama'u vabtallatil 'urUqu va sabatal ajru in sha Alloh.",m:"Chanqoq ketdi, tomirlar namlandi, inshaalloh, ajr sobit bo'ldi."}],
+ ru:[
+  {t:"Сухур (намерение на пост)",a:"نَوَيْتُ أَنْ أَصُومَ صَوْمَ شَهْرِ رَمَضَانَ مِنَ الْفَجْرِ إِلَى الْمَغْرِبِ خَالِصًا لِلّٰهِ تَعَالَى",tr:"Навайту ан асума соума шахри рамадана минал фаджри илаль магриби холисан лилляхи таала.",m:"Я намереваюсь соблюдать пост месяца Рамадан от рассвета до заката ради Всевышнего Аллаха."},
+  {t:"Дуа ифтара",a:"اللَّهُمَّ لَكَ صُمْتُ وَبِكَ آمَنْتُ وَعَلَيْكَ تَوَكَّلْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ",tr:"Аллахумма лака сумту ва бика аманту ва аляйка таваккальту ва аля ризқика афтарту.",m:"О Аллах, ради Тебя я постился, в Тебя уверовал, на Тебя уповал и Твоим уделом разговелся."},
+  {t:"После ифтара",a:"ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ وَثَبَتَ الْأَجْرُ إِنْ شَاءَ اللّٰهُ",tr:"Захабаз заму ва-бталлатиль уруку ва сабаталь аджру инша Аллах.",m:"Жажда ушла, жилы наполнились влагой, и награда установилась, если пожелает Аллах."}]
+};
+
+const $=id=>document.getElementById(id);
+let lang=load("lang","uz"), city=load("city","Toshkent"), timings=null, hijri=null, cal=null;
+function load(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}}
+function save(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+const tr=()=>T[lang];
+
+function nowTash(){return new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Tashkent"}))}
+const pad=n=>String(n).padStart(2,"0");
+const clean=s=>s.slice(0,5);
+
+function applyLang(){
+  document.documentElement.lang=lang; $("lang").textContent=lang.toUpperCase();
+  document.querySelectorAll("[data-i]").forEach(e=>e.textContent=tr()[e.dataset.i]);
+  const sel=$("city"); sel.innerHTML="";
+  for(const c in CITIES){const o=document.createElement("option");o.value=c;o.textContent=lang==="ru"?CITIES[c][2]:c;sel.appendChild(o)}
+  sel.value=city;
+  $("saharL").textContent=tr().sahar; $("iftarL").textContent=tr().iftar;
+  $("calTitle").textContent=tr().cal; $("tsTitle").textContent=tr().tas; $("treset").textContent=tr().reset;
+  $("duaTitle").textContent=tr().duaT; $("foot").textContent=tr().foot;
+  $("calHead").innerHTML=tr().cd.map(x=>`<th>${x}</th>`).join("");
+  renderDuas(); renderTasbeh(); render(); renderCal();
+}
+
+async function fetchTimings(){
+  const [lat,lng]=CITIES[city]; const d=nowTash();
+  const url=`https://api.aladhan.com/v1/timings/${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}?latitude=${lat}&longitude=${lng}&method=3&school=1&timezonestring=Asia/Tashkent`;
+  try{
+    const r=await fetch(url); const j=await r.json();
+    timings=j.data.timings; hijri=j.data.date.hijri; save("cache_"+city+"_"+d.toDateString(),JSON.stringify(j.data));
+  }catch(e){
+    try{const c=JSON.parse(localStorage.getItem("cache_"+city+"_"+d.toDateString()));timings=c.timings;hijri=c.date.hijri}catch(_){timings=null}
+  }
+  render();
+}
+async function fetchCal(){
+  const [lat,lng]=CITIES[city]; const d=nowTash();
+  try{
+    const r=await fetch(`https://api.aladhan.com/v1/calendar/${d.getFullYear()}/${d.getMonth()+1}?latitude=${lat}&longitude=${lng}&method=3&school=1&timezonestring=Asia/Tashkent`);
+    cal=(await r.json()).data;
+  }catch(e){cal=null}
+  renderCal();
+}
+function ramText(){
+  const d=nowTash();
+  if(hijri && +hijri.month.number===9) return tr().ramDay(+hijri.day);
+  const start=new Date(2027,1,8); const diff=Math.ceil((start-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);
+  return diff>0&&diff<400?tr().ramSoon(diff):tr().ramDash;
+}
+function nextPrayer(){
+  const d=nowTash(); const now=d.getHours()*3600+d.getMinutes()*60+d.getSeconds();
+  const order=["Fajr","Dhuhr","Asr","Maghrib","Isha"];
+  for(const k of order){const [h,m]=clean(timings[k]).split(":");const s=h*3600+m*60;if(s>now)return{k,left:s-now}}
+  const [h,m]=clean(timings.Fajr).split(":"); return{k:"Fajr",left:86400-now+h*3600+m*60};
+}
+function render(){
+  if(!timings){ $("list").innerHTML=`<div class="err">${tr().err}</div>`; return }
+  $("date").textContent=`${nowTash().getDate()} ${tr().months[nowTash().getMonth()]} · ${hijri?hijri.day+" "+hijri.month.en+" "+hijri.year:""}`;
+  $("ramBadge").textContent=ramText();
+  $("sahar").textContent=clean(timings.Fajr); $("iftar").textContent=clean(timings.Maghrib);
+  const np=nextPrayer();
+  $("list").innerHTML=KEYS.map(k=>`<div class="row ${k===np.k?"active":""}"><div class="n"><span>${ICONS[k]}</span>${tr()[k]}</div><div class="tm">${clean(timings[k])}</div></div>`).join("");
+  tick();
+}
+function tick(){
+  if(!timings)return; const np=nextPrayer(); const l=np.left;
+  $("nextName").textContent=`${tr().next} ${tr()[np.k]}`;
+  $("count").textContent=`${pad(Math.floor(l/3600))}:${pad(Math.floor(l%3600/60))}:${pad(l%60)}`;
+  $("untilTxt").textContent=tr().left;
+}
+function renderCal(){
+  if(!cal){$("calBody").innerHTML="";return}
+  const today=nowTash().getDate();
+  $("calBody").innerHTML=cal.map(x=>{const t=x.timings;const dd=+x.date.gregorian.day;
+    return `<tr class="${dd===today?"today":""}"><td>${dd}</td>${["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"].map(k=>`<td>${clean(t[k])}</td>`).join("")}</tr>`}).join("");
+}
+function renderDuas(){
+  $("duas").innerHTML=DUAS[lang].map(x=>`<div class="dua"><h3>${x.t}</h3><div class="ar">${x.a}</div><div class="tr">${x.tr}</div><div class="mn">${x.m}</div></div>`).join("");
+}
+/* Tasbeh */
+let zi=+load("zi",0), cnt=+load("cnt",0), cycles=+load("cyc",0);
+function renderTasbeh(){
+  const z=ZIKR[zi]; $("tsZikr").innerHTML=`<span class="ar" style="font-size:30px;text-align:center;display:block">${z[0]}</span>${z[1]} · ${z[2]}`;
+  $("tcount").textContent=cnt; $("tcycle").textContent=tr().cycle(cycles); $("tmode").textContent=tr().mode(z[1]);
+}
+$("tbtn").onclick=()=>{
+  cnt++; if(cnt>=ZIKR[zi][2]){cnt=0;cycles++; if(tg&&tg.HapticFeedback)tg.HapticFeedback.notificationOccurred("success")} else if(tg&&tg.HapticFeedback)tg.HapticFeedback.impactOccurred("light");
+  save("cnt",cnt);save("cyc",cycles);renderTasbeh();
+};
+$("treset").onclick=()=>{cnt=0;cycles=0;save("cnt",0);save("cyc",0);renderTasbeh()};
+$("tmode").onclick=()=>{zi=(zi+1)%ZIKR.length;cnt=0;save("zi",zi);save("cnt",0);renderTasbeh()};
+
+$("lang").onclick=()=>{lang=lang==="uz"?"ru":"uz";save("lang",lang);applyLang()};
+$("city").onchange=e=>{city=e.target.value;save("city",city);fetchTimings();fetchCal()};
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));t.classList.add("on");
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("on"));$("p-"+t.dataset.p).classList.add("on");
+  if(tg&&tg.HapticFeedback)tg.HapticFeedback.selectionChanged();
+});
+if(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user&&!localStorage.getItem("lang")){
+  if((tg.initDataUnsafe.user.language_code||"").startsWith("ru")){lang="ru"}
+}
+applyLang(); fetchTimings(); fetchCal(); setInterval(tick,1000);
+setInterval(()=>{ if(nowTash().getHours()===0&&nowTash().getMinutes()===1)fetchTimings() },60000);
+</script>
+</body>
+</html>
