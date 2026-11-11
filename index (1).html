@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#070b1e">
+<title>Ramazon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --ink:#070b1e; --night:#0c1330; --deep:#121b45;
+  --gold:#e8c36a; --gold-hi:#f8e8b4; --gold-lo:#b98f3a; --ember:#f2a65a; --moon:#cdd6ff;
+  --text:#f1ecdc; --muted:#98a2c8; --line:rgba(232,195,106,.22); --glass:rgba(255,255,255,.045);
+  --serif:"Cormorant Garamond","Times New Roman",serif; --sans:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --arab:"Amiri","Traditional Arabic",serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{min-height:100vh;color:var(--text);font-family:var(--sans);background:var(--ink);overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(120% 60% at 50% -10%,#1b2a66 0%,rgba(18,27,69,0) 70%),
+             linear-gradient(180deg,#0a1030 0%,#070b1e 60%)}
+.app{position:relative;max-width:480px;margin:0 auto;padding:14px 16px calc(104px + env(safe-area-inset-bottom))}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* top controls */
+.bar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.pill{appearance:none;-webkit-appearance:none;background:var(--glass);border:1px solid var(--line);color:var(--text);
+  border-radius:999px;padding:10px 16px;font-size:14px;font-weight:700;outline:none;cursor:pointer}
+select.pill{padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23e8c36a' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+select.pill option{color:#000}
+.lang{display:flex;padding:3px;gap:2px}
+.lang button{border:0;background:transparent;color:var(--muted);font-weight:800;font-size:13px;padding:7px 13px;border-radius:999px;cursor:pointer;transition:.25s}
+.lang button.on{background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:#1a1405}
+
+/* hero sky */
+.sky{position:relative;height:452px;border-radius:32px;overflow:hidden;border:1px solid var(--line);
+  background:radial-gradient(70% 45% at 50% 38%,rgba(232,195,106,.16),rgba(232,195,106,0) 70%),
+             linear-gradient(180deg,#16215a 0%,#0e1745 55%,#0a1030 100%)}
+.sky::after{content:"";position:absolute;inset:0;opacity:.05;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23f8e8b4' stroke-width='1'%3E%3Cpath d='M36 4l8 20 20-8-8 20 20 8-20 8 8 20-20-8-8 20-8-20-20 8 8-20-20-8 20-8-8-20 20 8z'/%3E%3C/g%3E%3C/svg%3E")}
+.stars i{position:absolute;border-radius:50%;background:var(--gold-hi);opacity:.15;animation:tw var(--t,3s) ease-in-out var(--d,0s) infinite alternate}
+@keyframes tw{to{opacity:.95}}
+.moon{position:absolute;top:16px;right:20px;width:64px;height:64px;filter:drop-shadow(0 0 14px rgba(248,232,180,.55))}
+.lantern{position:absolute;top:-4px;transform-origin:50% 0;filter:drop-shadow(0 0 10px rgba(242,166,90,.5));animation:swing 5.5s ease-in-out var(--d,0s) infinite alternate}
+.lantern.a{left:16px;width:44px;height:96px}
+.lantern.b{left:68px;width:32px;height:70px;--d:-2.2s}
+@keyframes swing{from{transform:rotate(-5deg)}to{transform:rotate(5deg)}}
+.flame{animation:flick 1.8s ease-in-out infinite alternate}
+@keyframes flick{from{opacity:.75}to{opacity:1}}
+.ringwrap{position:absolute;left:50%;top:66px;width:240px;height:240px;transform:translateX(-50%)}
+.ringwrap svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.track{fill:none;stroke:rgba(255,255,255,.08);stroke-width:5}
+.prog{fill:none;stroke:url(#gold);stroke-width:6;stroke-linecap:round;stroke-dasharray:628.32;stroke-dashoffset:628.32;transition:stroke-dashoffset 1.6s cubic-bezier(.2,.7,.2,1);filter:drop-shadow(0 0 6px rgba(232,195,106,.6))}
+.prog.live{transition:stroke-dashoffset 1s linear}
+.center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.nlabel{font-size:12px;color:var(--muted);letter-spacing:.2px}
+.nname{font-family:var(--serif);font-weight:700;font-size:38px;line-height:1;color:var(--gold-hi);margin-top:4px}
+.narab{font-family:var(--arab);font-size:22px;color:var(--gold);line-height:1.2}
+.count{font-weight:800;font-size:34px;font-variant-numeric:tabular-nums;letter-spacing:.5px;margin-top:6px}
+.dates{position:absolute;left:0;right:0;bottom:106px;text-align:center;font-size:13px;color:var(--muted)}
+.dates .ar{font-family:var(--arab);font-size:16px;color:var(--gold)}
+.skyline{position:absolute;left:0;right:0;bottom:0;width:100%;height:96px;display:block}
+
+/* ramadan */
+.ram{margin-top:14px;padding:16px;border-radius:22px;border:1px solid var(--line);background:linear-gradient(135deg,rgba(232,195,106,.12),rgba(232,195,106,.03))}
+.ram-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.ram-t{font-family:var(--serif);font-weight:700;font-size:26px;color:var(--gold-hi)}
+.ram-s{font-size:13px;color:var(--muted)}
+.dots{display:grid;grid-template-columns:repeat(30,1fr);gap:3px;margin-top:14px}
+.dots i{height:8px;border-radius:3px;background:rgba(255,255,255,.1)}
+.dots i.on{background:linear-gradient(90deg,var(--gold-lo),var(--gold-hi))}
+.dots i.now{box-shadow:0 0 8px var(--gold);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.5}}
+
+/* duo */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.dcard{padding:16px 14px;border-radius:22px;border:1px solid var(--line);background:var(--glass)}
+.dcard .k{font-size:13px;color:var(--muted)}
+.dcard .t{font-family:var(--serif);font-weight:700;font-size:38px;line-height:1.1;margin-top:2px}
+.dcard.s .t{color:var(--moon)} .dcard.i .t{color:var(--ember)}
+.dcard .m{font-size:12px;color:var(--muted);margin-top:8px;font-variant-numeric:tabular-nums}
+.dcard .m b{color:var(--text);font-weight:700}
+
+/* prayer list */
+.list{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:18px;background:var(--glass);border:1px solid transparent;transition:border-color .3s,background .3s}
+.row .l{display:flex;flex-direction:column}
+.row .n{font-size:17px;font-weight:700}
+.row .a{font-family:var(--arab);font-size:17px;color:var(--gold);line-height:1.3}
+.row .r{display:flex;align-items:center;gap:10px}
+.row .tm{font-family:var(--serif);font-weight:700;font-size:28px;font-variant-numeric:tabular-nums}
+.row.past{opacity:.5}
+.row.next{border-color:var(--gold);background:linear-gradient(90deg,rgba(232,195,106,.18),rgba(232,195,106,.04));box-shadow:0 0 24px rgba(232,195,106,.14)}
+.row.next .tm{color:var(--gold-hi)}
+.chip{font-size:11px;font-weight:800;color:#1a1405;background:var(--gold);border-radius:999px;padding:3px 9px}
+.tick{width:16px;height:16px;stroke:var(--gold);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+/* pages */
+.page{display:none}.page.on{display:block}
+h2{font-family:var(--serif);font-weight:700;font-size:30px;margin:6px 4px 14px;color:var(--gold-hi)}
+.err{padding:22px;text-align:center;color:#ffc9b8;border:1px dashed var(--line);border-radius:18px;margin-top:14px}
+.err button{margin-top:12px}
+
+/* calendar */
+.cal{width:100%;border-collapse:separate;border-spacing:0 5px;font-variant-numeric:tabular-nums;font-size:13.5px}
+.cal th{color:var(--muted);font-weight:500;font-size:11.5px;padding:8px 2px;position:sticky;top:0;background:#0a1030;z-index:2}
+.cal td{background:var(--glass);padding:11px 2px;text-align:center}
+.cal td:first-child{border-radius:12px 0 0 12px;color:var(--gold);font-weight:800}
+.cal td:last-child{border-radius:0 12px 12px 0}
+.cal tr.today td{background:rgba(232,195,106,.2);color:var(--gold-hi);font-weight:700}
+
+/* tasbeh */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;border:1px solid var(--line);background:var(--glass);border-radius:999px;padding:9px 15px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;transition:.25s}
+.chips button.on{background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:#1a1405;border-color:transparent}
+.zar{font-family:var(--arab);font-size:44px;text-align:center;color:var(--gold-hi);margin:14px 0 0;line-height:1.5}
+.zsub{text-align:center;color:var(--muted);font-size:13px}
+.tw{position:relative;width:270px;height:270px;margin:16px auto}
+.tw svg{position:absolute;inset:0;transform:rotate(-90deg);pointer-events:none}
+.tbtn{position:absolute;inset:18px;border-radius:50%;border:1px solid var(--line);cursor:pointer;overflow:hidden;user-select:none;-webkit-user-select:none;
+  background:radial-gradient(circle at 35% 28%,#25357f,#101a4a 70%);box-shadow:inset 0 2px 18px rgba(255,255,255,.08),0 18px 40px rgba(0,0,0,.45);
+  display:flex;align-items:center;justify-content:center;touch-action:manipulation;transition:transform .12s}
+.tbtn:active{transform:scale(.965)}
+.tcount{font-family:var(--serif);font-weight:700;font-size:92px;line-height:1;color:var(--gold-hi)}
+.tcount.bump{animation:bump .25s ease}
+@keyframes bump{40%{transform:scale(1.12)}}
+.ripple{position:absolute;border-radius:50%;background:rgba(248,232,180,.35);width:30px;height:30px;margin:-15px 0 0 -15px;animation:rip .6s ease-out forwards;pointer-events:none}
+@keyframes rip{to{transform:scale(9);opacity:0}}
+.tmeta{display:flex;justify-content:center;gap:10px;align-items:center;color:var(--muted);font-size:13px}
+.tmeta button{background:var(--glass);border:1px solid var(--line);border-radius:999px;padding:8px 16px;cursor:pointer}
+
+/* duas */
+.dua{border:1px solid var(--line);border-radius:22px;background:var(--glass);margin-bottom:12px;overflow:hidden}
+.dua>button{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;background:none;border:0;padding:16px;cursor:pointer;text-align:left}
+.dua .h{font-family:var(--serif);font-weight:700;font-size:23px;color:var(--gold-hi)}
+.dua .chev{flex:none;width:18px;height:18px;stroke:var(--gold);fill:none;stroke-width:2;stroke-linecap:round;transition:transform .3s}
+.dua.open .chev{transform:rotate(180deg)}
+.dua .body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s ease}
+.dua.open .body{grid-template-rows:1fr}
+.dua .inner{overflow:hidden}
+.dua .pad{padding:0 16px 18px}
+.ar{font-family:var(--arab);font-size:27px;line-height:2.05;direction:rtl;text-align:right;color:var(--gold-hi)}
+.tr{font-size:14px;color:var(--moon);line-height:1.6;margin-top:8px;font-style:italic}
+.mn{font-size:15px;line-height:1.65;margin-top:10px}
+.foot{text-align:center;color:var(--muted);font-size:11.5px;line-height:1.6;margin:22px 10px 0}
+
+/* tab bar */
+.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;padding:0 14px calc(14px + env(safe-area-inset-bottom));z-index:10;pointer-events:none}
+.tabs .in{pointer-events:auto;position:relative;display:flex;width:100%;max-width:452px;padding:6px;border-radius:26px;background:rgba(12,19,48,.94);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.ind{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 12px)/4);border-radius:20px;background:linear-gradient(180deg,var(--gold-hi),var(--gold));transition:transform .35s cubic-bezier(.3,.8,.3,1)}
+.tab{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;border:0;background:none;font-size:11.5px;font-weight:700;color:var(--muted);cursor:pointer;transition:color .25s}
+.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab.on{color:#1a1405}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .stars i{opacity:.6}
+}
+@media (max-width:360px){.count{font-size:30px}.dcard .t{font-size:32px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b98f3a"/><stop offset=".5" stop-color="#f8e8b4"/><stop offset="1" stop-color="#e8c36a"/></linearGradient>
+    <linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6d58a"/><stop offset="1" stop-color="#c47f2d"/></linearGradient>
+    <linearGradient id="mg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3c4"/><stop offset="1" stop-color="#e0a93e"/></linearGradient>
+    <symbol id="lantern" viewBox="0 0 60 130">
+      <line x1="30" y1="0" x2="30" y2="30" stroke="#b98f3a" stroke-width="1.6"/>
+      <path d="M20 40 L24 30 H36 L40 40 Z" fill="#b98f3a"/>
+      <path d="M16 44 Q16 40 20 40 H40 Q44 40 44 44 L48 82 Q48 90 40 92 H20 Q12 90 12 82 Z" fill="url(#lg)" stroke="#f8e8b4" stroke-opacity=".5"/>
+      <ellipse class="flame" cx="30" cy="66" rx="9" ry="14" fill="#fff3c4"/>
+      <path d="M30 52 L36 66 L30 80 L24 66 Z" fill="#0c1330" opacity=".5"/>
+      <path d="M22 92 L30 104 L38 92 Z" fill="#b98f3a"/>
+      <line x1="30" y1="104" x2="30" y2="118" stroke="#e8c36a" stroke-width="2"/>
+      <circle cx="30" cy="121" r="3" fill="#e8c36a"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <div class="bar">
+    <select class="pill" id="city" aria-label="City"></select>
+    <div class="pill lang" role="group" aria-label="Language"><button id="lUz" class="on">UZ</button><button id="lRu">RU</button></div>
+  </div>
+
+  <section class="page on" id="p-home">
+    <div class="sky" id="sky">
+      <div class="stars" id="stars"></div>
+      <svg class="moon" viewBox="0 0 100 100" aria-hidden="true"><path d="M64 10a40 40 0 1 0 28 68A32 32 0 0 1 64 10z" fill="url(#mg)"/><path d="M84 16l2.4 6.2 6.2 2.4-6.2 2.4L84 33l-2.4-6-6.2-2.4 6.2-2.4z" fill="#fff3c4"/></svg>
+      <svg class="lantern a" aria-hidden="true"><use href="#lantern"/></svg>
+      <svg class="lantern b" aria-hidden="true"><use href="#lantern"/></svg>
+
+      <div class="ringwrap">
+        <svg viewBox="0 0 240 240" aria-hidden="true"><circle class="track" cx="120" cy="120" r="100"/><circle class="prog" id="prog" cx="120" cy="120" r="100"/></svg>
+        <div class="center">
+          <div class="nlabel" id="nlabel"></div>
+          <div class="nname" id="nname">…</div>
+          <div class="narab" id="narab"></div>
+          <div class="count" id="count">--:--:--</div>
+        </div>
+      </div>
+
+      <div class="dates" id="dates"></div>
+      <svg class="skyline" viewBox="0 0 400 96" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        <g fill="#060a1c">
+          <rect x="0" y="84" width="400" height="12"/>
+          <rect x="30" y="26" width="9" height="62"/><path d="M29 26 L34.5 8 L40 26Z"/><rect x="27" y="42" width="15" height="4"/><circle cx="34.5" cy="6" r="2"/>
+          <rect x="361" y="26" width="9" height="62"/><path d="M360 26 L365.5 8 L371 26Z"/><rect x="358" y="42" width="15" height="4"/><circle cx="365.5" cy="6" r="2"/>
+          <path d="M138 88 V64 Q138 36 200 36 Q262 36 262 64 V88Z"/><rect x="199" y="20" width="2" height="16"/><circle cx="200" cy="17" r="3.5"/>
+          <path d="M92 88 V70 Q92 54 114 54 Q136 54 136 70 V88Z"/><path d="M264 88 V70 Q264 54 286 54 Q308 54 308 70 V88Z"/>
+          <rect x="58" y="62" width="30" height="26"/><rect x="312" y="62" width="30" height="26"/>
+        </g>
+        <g fill="#f2c66a" opacity=".85"><rect x="190" y="58" width="4" height="9" rx="2"/><rect x="206" y="58" width="4" height="9" rx="2"/><rect x="112" y="68" width="3" height="7" rx="1.5"/><rect x="285" y="68" width="3" height="7" rx="1.5"/></g>
+      </svg>
+    </div>
+
+    <div class="ram" id="ram"></div>
+    <div class="duo" id="duo"></div>
+    <div class="list" id="list"></div>
+  </section>
+
+  <section class="page" id="p-cal">
+    <h2 id="calTitle"></h2>
+    <table class="cal"><thead><tr id="calHead"></tr></thead><tbody id="calBody"></tbody></table>
+  </section>
+
+  <section class="page" id="p-tasbeh">
+    <h2 id="tsTitle"></h2>
+    <div class="chips" id="zchips"></div>
+    <div class="zar" id="zar"></div>
+    <div class="zsub" id="zsub"></div>
+    <div class="tw">
+      <svg viewBox="0 0 270 270" aria-hidden="true"><circle class="track" cx="135" cy="135" r="128"/><circle class="prog live" id="tprog" cx="135" cy="135" r="128" style="stroke-dasharray:804.25;stroke-dashoffset:804.25"/></svg>
+      <button class="tbtn" id="tbtn" aria-label="Tasbeh"><div class="tcount" id="tcount">0</div></button>
+    </div>
+    <div class="tmeta"><span id="tcycle"></span><button id="treset"></button></div>
+  </section>
+
+  <section class="page" id="p-dua">
+    <h2 id="duaTitle"></h2>
+    <div id="duas"></div>
+  </section>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<nav class="tabs"><div class="in">
+  <div class="ind" id="ind"></div>
+  <button class="tab on" data-p="home"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span data-i="tHome"></span></button>
+  <button class="tab" data-p="cal"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span data-i="tCal"></span></button>
+  <button class="tab" data-p="tasbeh"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="18" cy="10" r="2"/><circle cx="16" cy="17.5" r="2"/><circle cx="8" cy="17.5" r="2"/><circle cx="6" cy="10" r="2"/></svg><span data-i="tTas"></span></button>
+  <button class="tab" data-p="dua"><svg viewBox="0 0 24 24"><path d="M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5zM12 6.5v13"/></svg><span data-i="tDua"></span></button>
+</div></nav>
+
+<script>
+const tg = window.Telegram && Telegram.WebApp;
+if (tg) { try{ tg.ready(); tg.expand(); tg.setHeaderColor('#070b1e'); tg.setBackgroundColor('#070b1e'); }catch(e){} }
+
+const CITIES = {
+  "Toshkent":[41.2995,69.2401,"Ташкент"],"Samarqand":[39.6542,66.9597,"Самарканд"],"Buxoro":[39.7747,64.4286,"Бухара"],
+  "Andijon":[40.7821,72.3442,"Андижан"],"Namangan":[41.0011,71.6683,"Наманган"],"Farg'ona":[40.3864,71.7864,"Фергана"],
+  "Qarshi":[38.8606,65.7891,"Карши"],"Navoiy":[40.0844,65.3792,"Навои"],"Nukus":[42.4531,59.6103,"Нукус"],
+  "Urganch":[41.5506,60.6317,"Ургенч"],"Xiva":[41.3775,60.3640,"Хива"],"Termiz":[37.2242,67.2783,"Термез"],
+  "Jizzax":[40.1158,67.8422,"Джизак"],"Guliston":[40.4897,68.7842,"Гулистан"]
+};
+const KEYS=["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"];
+const PR=["Fajr","Dhuhr","Asr","Maghrib","Isha"];
+const AR={Fajr:"الفجر",Sunrise:"الشروق",Dhuhr:"الظهر",Asr:"العصر",Maghrib:"المغرب",Isha:"العشاء"};
+const RAMADAN_START=new Date(2027,1,8);
+
+const T={
+ uz:{tHome:"Vaqtlar",tCal:"Taqvim",tTas:"Tasbeh",tDua:"Duolar",
+  Fajr:"Bomdod",Sunrise:"Quyosh",Dhuhr:"Peshin",Asr:"Asr",Maghrib:"Shom",Isha:"Xufton",
+  nextIs:"Keyingi namoz",left:"qoldi",soon:"Keyingi",
+  sahar:"Saharlik tugashi",iftar:"Iftor vaqti",toSahar:"Saharlikgacha",toIftar:"Iftorgacha",
+  ramDay:n=>`Ramazon, ${n}-kun`,ramLeft:n=>`${30-n} kun qoldi`,ramSoonT:d=>`Ramazongacha ${d} kun`,ramSoonS:"Ramazon yaqinlashmoqda. Taxminiy boshlanish: 8-fevral",
+  months:["Yanvar","Fevral","Mart","Aprel","May","Iyun","Iyul","Avgust","Sentabr","Oktabr","Noyabr","Dekabr"],
+  cal:"Oylik taqvim",cd:["Kun","Bomdod","Quyosh","Peshin","Asr","Shom","Xufton"],
+  tas:"Tasbeh",reset:"Tozalash",cycle:n=>`Aylanish: ${n}`,duaT:"Duolar",
+  err:"Vaqtlar yuklanmadi. Internetni tekshiring.",retry:"Qayta urinish",
+  foot:"Vaqtlar Aladhan API'dan, Hanafiy mazhab bo'yicha. Masjid vaqtidan 1–3 daqiqa farq bo'lishi mumkin.",
+  zikr:["Subhanalloh","Alhamdulillah","Allohu akbar","La ilaha illalloh"]},
+ ru:{tHome:"Время",tCal:"Календарь",tTas:"Тасбих",tDua:"Дуа",
+  Fajr:"Фаджр",Sunrise:"Восход",Dhuhr:"Зухр",Asr:"Аср",Maghrib:"Магриб",Isha:"Иша",
+  nextIs:"Следующий намаз",left:"осталось",soon:"Далее",
+  sahar:"Конец сухура",iftar:"Время ифтара",toSahar:"До сухура",toIftar:"До ифтара",
+  ramDay:n=>`Рамадан, ${n}-й день`,ramLeft:n=>`осталось ${30-n} дн.`,ramSoonT:d=>`До Рамадана ${d} дн.`,ramSoonS:"Рамадан приближается. Ориентировочное начало: 8 февраля",
+  months:["Января","Февраля","Марта","Апреля","Мая","Июня","Июля","Августа","Сентября","Октября","Ноября","Декабря"],
+  cal:"Календарь на месяц",cd:["День","Фаджр","Восход","Зухр","Аср","Магриб","Иша"],
+  tas:"Тасбих",reset:"Сбросить",cycle:n=>`Кругов: ${n}`,duaT:"Дуа",
+  err:"Не удалось загрузить время. Проверьте интернет.",retry:"Повторить",
+  foot:"Время по Aladhan API, ханафитский мазхаб. Возможна разница с мечетью в 1–3 минуты.",
+  zikr:["Субханаллах","Альхамдулиллах","Аллаху акбар","Ля илаха илляллах"]}
+};
+const ZIKR=[["سُبْحَانَ اللّٰه",33],["الْحَمْدُ لِلّٰه",33],["اللّٰهُ أَكْبَر",34],["لَا إِلٰهَ إِلَّا اللّٰه",100]];
+const DUAS={
+ uz:[
+  {t:"Saharlik, ro'za niyati",a:"نَوَيْتُ أَنْ أَصُومَ صَوْمَ شَهْرِ رَمَضَانَ مِنَ الْفَجْرِ إِلَى الْمَغْرِبِ خَالِصًا لِلّٰهِ تَعَالَى",tr:"Navaytu an asuma sovma shahri ramazona minal fajri ilal mag'ribi, xolisan lillahi ta'ala.",m:"Ramazon oyining ro'zasini subhdan to kun botguncha tutishni niyat qildim, xolis Alloh uchun."},
+  {t:"Iftor duosi",a:"اللَّهُمَّ لَكَ صُمْتُ وَبِكَ آمَنْتُ وَعَلَيْكَ تَوَكَّلْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ",tr:"Allohumma laka sumtu va bika amantu va 'alayka tavakkaltu va 'ala rizqika aftartu.",m:"Ey Alloh, Sen uchun ro'za tutdim, Senga iymon keltirdim, Senga tavakkul qildim va bergan rizqing bilan iftor qildim."},
+  {t:"Iftordan keyin",a:"ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ وَثَبَتَ الْأَجْرُ إِنْ شَاءَ اللّٰهُ",tr:"Zahabaz zama'u vabtallatil 'uruqu va sabatal ajru in sha Alloh.",m:"Chanqoq ketdi, tomirlar namlandi, inshaalloh, ajr sobit bo'ldi."},
+  {t:"Qadr kechasi duosi",a:"اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي",tr:"Allohumma innaka 'afuvvun tuhibbul 'afva fa'fu 'anni.",m:"Ey Alloh, Sen afv etuvchisan, afv etishni yaxshi ko'rasan, meni afv et."}],
+ ru:[
+  {t:"Сухур, намерение на пост",a:"نَوَيْتُ أَنْ أَصُومَ صَوْمَ شَهْرِ رَمَضَانَ مِنَ الْفَجْرِ إِلَى الْمَغْرِبِ خَالِصًا لِلّٰهِ تَعَالَى",tr:"Навайту ан асума соума шахри рамадана минал фаджри илаль магриби холисан лилляхи таала.",m:"Я намереваюсь соблюдать пост месяца Рамадан от рассвета до заката ради Всевышнего Аллаха."},
+  {t:"Дуа ифтара",a:"اللَّهُمَّ لَكَ صُمْتُ وَبِكَ آمَنْتُ وَعَلَيْكَ تَوَكَّلْتُ وَعَلَى رِزْقِكَ أَفْطَرْتُ",tr:"Аллахумма лака сумту ва бика аманту ва аляйка таваккальту ва аля ризқика афтарту.",m:"О Аллах, ради Тебя я постился, в Тебя уверовал, на Тебя уповал и Твоим уделом разговелся."},
+  {t:"После ифтара",a:"ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ وَثَبَتَ الْأَجْرُ إِنْ شَاءَ اللّٰهُ",tr:"Захабаз заму ва-бталлатиль уруку ва сабаталь аджру инша Аллах.",m:"Жажда ушла, жилы наполнились влагой, и награда установилась, если пожелает Аллах."},
+  {t:"Дуа в Ночь Кадр",a:"اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي",tr:"Аллахумма иннака 'афуввун тухиббуль-'афва фа'фу 'анни.",m:"О Аллах, Ты Прощающий, любишь прощать, так прости меня."}]
+};
+
+const $=id=>document.getElementById(id);
+function load(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}}
+function save(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+let lang=load("lang",""), city=load("city","Toshkent"), timings=null, hijri=null, cal=null, firstRing=true;
+if(!lang){ lang=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user&&(tg.initDataUnsafe.user.language_code||"").startsWith("ru"))?"ru":"uz"; }
+const tr=()=>T[lang];
+const pad=n=>String(n).padStart(2,"0");
+const clean=s=>String(s).slice(0,5);
+const toSec=s=>{const [h,m]=clean(s).split(":");return (+h)*3600+(+m)*60};
+function nowTash(){return new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Tashkent"}))}
+function nowSec(){const d=nowTash();return d.getHours()*3600+d.getMinutes()*60+d.getSeconds()}
+const fmt=l=>`${pad(Math.floor(l/3600))}:${pad(Math.floor(l%3600/60))}:${pad(l%60)}`;
+function haptic(t){ if(tg&&tg.HapticFeedback){ try{ t==="ok"?tg.HapticFeedback.notificationOccurred("success"):tg.HapticFeedback.impactOccurred("light"); return }catch(e){} } if(navigator.vibrate)navigator.vibrate(t==="ok"?[20,40,20]:8); }
+
+/* stars */
+(function(){const w=$("stars");let h="";for(let i=0;i<38;i++){const s=(Math.random()*1.8+.8).toFixed(1);h+=`<i style="left:${(Math.random()*100).toFixed(1)}%;top:${(Math.random()*62).toFixed(1)}%;width:${s}px;height:${s}px;--t:${(Math.random()*3+2).toFixed(1)}s;--d:-${(Math.random()*5).toFixed(1)}s"></i>`}w.innerHTML=h})();
+
+/* data */
+async function fetchTimings(){
+  const [lat,lng]=CITIES[city]; const d=nowTash();
+  const key="cache2_"+city+"_"+d.toDateString();
+  const url=`https://api.aladhan.com/v1/timings/${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}?latitude=${lat}&longitude=${lng}&method=3&school=1&timezonestring=Asia/Tashkent`;
+  try{
+    const r=await fetch(url); const j=await r.json();
+    timings=j.data.timings; hijri=j.data.date.hijri; save(key,JSON.stringify(j.data));
+  }catch(e){
+    try{const c=JSON.parse(localStorage.getItem(key));timings=c.timings;hijri=c.date.hijri}catch(_){timings=null}
+  }
+  renderHome();
+}
+async function fetchCal(){
+  const [lat,lng]=CITIES[city]; const d=nowTash();
+  try{
+    const r=await fetch(`https://api.aladhan.com/v1/calendar/${d.getFullYear()}/${d.getMonth()+1}?latitude=${lat}&longitude=${lng}&method=3&school=1&timezonestring=Asia/Tashkent`);
+    cal=(await r.json()).data;
+  }catch(e){cal=null}
+  renderCal();
+}
+
+/* schedule */
+function schedule(){
+  const s=PR.map(k=>[k,toSec(timings[k])]); const n=nowSec();
+  const i=s.findIndex(x=>x[1]>n); let next,prev;
+  if(i===-1){next=[s[0][0],s[0][1]+86400];prev=s[4]}
+  else if(i===0){next=s[0];prev=[s[4][0],s[4][1]-86400]}
+  else{next=s[i];prev=s[i-1]}
+  return {k:next[0],left:next[1]-n,total:next[1]-prev[1],passed:n-prev[1]};
+}
+function until(key){const d=toSec(timings[key])-nowSec();return d<0?d+86400:d}
+
+/* render home */
+function renderHome(){
+  const L=tr();
+  const dEl=$("dates"), n=nowTash();
+  if(!timings){
+    $("nname").textContent="…";$("narab").textContent="";$("count").textContent="--:--:--";$("nlabel").textContent="";
+    $("ram").style.display="none";$("duo").innerHTML="";
+    $("list").innerHTML=`<div class="err">${L.err}<br><button class="pill" id="retry">${L.retry}</button></div>`;
+    $("retry").onclick=()=>fetchTimings();
+    dEl.textContent="";return;
+  }
+  dEl.innerHTML=`${n.getDate()} ${L.months[n.getMonth()]}${hijri?` · <span class="ar" dir="ltr">${hijri.day} ${hijri.month.ar||hijri.month.en} ${hijri.year}</span>`:""}`;
+
+  // ramadan card
+  const ram=$("ram"); ram.style.display="block";
+  const isRam=hijri&&+hijri.month.number===9;
+  if(isRam){
+    const day=+hijri.day;
+    ram.innerHTML=`<div class="ram-h"><div class="ram-t">${L.ramDay(day)}</div><div class="ram-s">${L.ramLeft(day)}</div></div><div class="dots">${Array.from({length:30},(_,i)=>`<i class="${i<day?"on":""} ${i===day-1?"now":""}"></i>`).join("")}</div>`;
+  }else{
+    const diff=Math.ceil((RAMADAN_START-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/864e5);
+    if(diff>0&&diff<400) ram.innerHTML=`<div class="ram-h"><div class="ram-t">${L.ramSoonT(diff)}</div></div><div class="ram-s" style="margin-top:6px">${L.ramSoonS}</div>`;
+    else ram.style.display="none";
+  }
+
+  // sahar / iftar
+  $("duo").innerHTML=`<div class="dcard s"><div class="k">${L.sahar}</div><div class="t">${clean(timings.Fajr)}</div><div class="m">${L.toSahar}: <b id="m1"></b></div></div>
+                      <div class="dcard i"><div class="k">${L.iftar}</div><div class="t">${clean(timings.Maghrib)}</div><div class="m">${L.toIftar}: <b id="m2"></b></div></div>`;
+
+  // prayer list
+  const sc=schedule(), ns=nowSec();
+  $("list").innerHTML=KEYS.map(k=>{
+    const past=toSec(timings[k])<=ns && !(k===sc.k&&false);
+    const isNext=k===sc.k;
+    return `<div class="row ${isNext?"next":past?"past":""}"><div class="l"><span class="n">${L[k]}</span><span class="a">${AR[k]}</span></div><div class="r">${isNext?`<span class="chip">${L.soon}</span>`:past?`<svg class="tick" viewBox="0 0 16 16"><path d="M3 8.5l3.2 3L13 4.5"/></svg>`:""}<span class="tm">${clean(timings[k])}</span></div></div>`;
+  }).join("");
+  tick();
+}
+function tick(){
+  if(!timings)return; const L=tr(); const s=schedule();
+  $("nlabel").textContent=L.nextIs; $("nname").textContent=L[s.k]; $("narab").textContent=AR[s.k];
+  $("count").textContent=fmt(s.left);
+  const p=Math.min(1,Math.max(0,s.passed/s.total)); const prog=$("prog");
+  prog.style.strokeDashoffset=(628.32*(1-p)).toFixed(2);
+  if(firstRing){firstRing=false;setTimeout(()=>prog.classList.add("live"),1700)}
+  const m1=$("m1"),m2=$("m2"); if(m1)m1.textContent=fmt(until("Fajr")); if(m2)m2.textContent=fmt(until("Maghrib"));
+  const rows=document.querySelectorAll(".row"); // refresh highlight when next prayer changes
+  if(window._lastNext&&window._lastNext!==s.k) renderHome();
+  window._lastNext=s.k;
+}
+
+/* calendar */
+function renderCal(){
+  const L=tr();
+  $("calHead").innerHTML=L.cd.map(x=>`<th>${x}</th>`).join("");
+  if(!cal){$("calBody").innerHTML="";return}
+  const today=nowTash().getDate();
+  $("calBody").innerHTML=cal.map(x=>{const t=x.timings,dd=+x.date.gregorian.day;
+    return `<tr class="${dd===today?"today":""}"><td>${dd}</td>${KEYS.map(k=>`<td>${clean(t[k])}</td>`).join("")}</tr>`}).join("");
+}
+
+/* tasbeh */
+let zi=+load("zi",0), cnt=+load("cnt",0), cycles=+load("cyc",0);
+function renderZ(){
+  const L=tr(), z=ZIKR[zi];
+  $("zchips").innerHTML=L.zikr.map((n,i)=>`<button class="${i===zi?"on":""}" data-z="${i}">${n}</button>`).join("");
+  $("zar").textContent=z[0]; $("zsub").textContent=`${cnt} / ${z[1]}`;
+  $("tcount").textContent=cnt; $("tcycle").textContent=L.cycle(cycles); $("treset").textContent=L.reset;
+  $("tprog").style.strokeDashoffset=(804.25*(1-cnt/z[1])).toFixed(2);
+  document.querySelectorAll("#zchips button").forEach(b=>b.onclick=()=>{zi=+b.dataset.z;cnt=0;save("zi",zi);save("cnt",0);renderZ()});
+}
+$("tbtn").addEventListener("pointerdown",e=>{
+  const b=$("tbtn"),r=b.getBoundingClientRect(),s=document.createElement("span");
+  s.className="ripple";s.style.left=(e.clientX-r.left)+"px";s.style.top=(e.clientY-r.top)+"px";b.appendChild(s);s.addEventListener("animationend",()=>s.remove());
+  cnt++; const target=ZIKR[zi][1];
+  if(cnt>=target){cnt=0;cycles++;haptic("ok")}else haptic();
+  save("cnt",cnt);save("cyc",cycles);renderZ();
+  const c=$("tcount");c.classList.remove("bump");void c.offsetWidth;c.classList.add("bump");
+});
+$("treset").onclick=()=>{cnt=0;cycles=0;save("cnt",0);save("cyc",0);renderZ()};
+
+/* duas */
+function renderDuas(){
+  $("duas").innerHTML=DUAS[lang].map((x,i)=>`<div class="dua ${i===0?"open":""}"><button aria-expanded="${i===0}"><span class="h">${x.t}</span><svg class="chev" viewBox="0 0 20 20"><path d="M4 7l6 6 6-6"/></svg></button><div class="body"><div class="inner"><div class="pad"><div class="ar">${x.a}</div><div class="tr">${x.tr}</div><div class="mn">${x.m}</div></div></div></div></div>`).join("");
+  document.querySelectorAll(".dua>button").forEach(b=>b.onclick=()=>{const d=b.parentElement;const o=d.classList.toggle("open");b.setAttribute("aria-expanded",o)});
+}
+
+/* shell */
+function applyLang(){
+  const L=tr(); document.documentElement.lang=lang;
+  $("lUz").classList.toggle("on",lang==="uz"); $("lRu").classList.toggle("on",lang==="ru");
+  document.querySelectorAll("[data-i]").forEach(e=>e.textContent=L[e.dataset.i]);
+  const sel=$("city"); sel.innerHTML="";
+  for(const c in CITIES){const o=document.createElement("option");o.value=c;o.textContent=lang==="ru"?CITIES[c][2]:c;sel.appendChild(o)}
+  sel.value=city;
+  $("calTitle").textContent=L.cal; $("tsTitle").textContent=L.tas; $("duaTitle").textContent=L.duaT; $("foot").textContent=L.foot;
+  renderDuas(); renderZ(); renderHome(); renderCal();
+}
+function setLang(l){lang=l;save("lang",l);applyLang()}
+$("lUz").onclick=()=>setLang("uz"); $("lRu").onclick=()=>setLang("ru");
+$("city").onchange=e=>{city=e.target.value;save("city",city);firstRing=true;$("prog").classList.remove("live");fetchTimings();fetchCal()};
+const tabs=[...document.querySelectorAll(".tab")];
+tabs.forEach((t,i)=>t.onclick=()=>{
+  tabs.forEach(x=>x.classList.remove("on"));t.classList.add("on");
+  $("ind").style.transform=`translateX(${i*100}%)`;
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("on"));$("p-"+t.dataset.p).classList.add("on");
+  window.scrollTo({top:0});
+  if(t.dataset.p==="cal"){const el=document.querySelector(".cal tr.today");if(el)setTimeout(()=>el.scrollIntoView({block:"center"}),50)}
+  haptic();
+});
+
+applyLang(); fetchTimings(); fetchCal(); setInterval(tick,1000);
+setInterval(()=>{const d=nowTash();if(d.getHours()===0&&d.getMinutes()===1){fetchTimings();fetchCal()}},60000);
+</script>
+</body>
+</html>
