@@ -113,6 +113,14 @@ h2{font-family:var(--serif);font-weight:700;font-size:30px;margin:6px 4px 14px;c
 .cal td:last-child{border-radius:0 12px 12px 0}
 .cal tr.today td{background:rgba(232,195,106,.2);color:var(--gold-hi);font-weight:700}
 
+/* cal controls */
+.seg{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:999px;background:var(--glass);margin-bottom:12px}
+.seg button{flex:1;border:0;background:transparent;color:var(--muted);font-weight:800;font-size:14px;padding:10px 0;border-radius:999px;cursor:pointer;transition:.25s}
+.seg button.on{background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:#1a1405}
+.mnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.mnav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--glass);color:var(--gold-hi);font-size:24px;cursor:pointer}
+.mnav #mname{font-family:var(--serif);font-weight:700;font-size:24px;color:var(--gold-hi)}
+.cal tr.ramr td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
 /* tasbeh */
 .chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
@@ -227,6 +235,8 @@ h2{font-family:var(--serif);font-weight:700;font-size:30px;margin:6px 4px 14px;c
 
   <section class="page" id="p-cal">
     <h2 id="calTitle"></h2>
+    <div class="seg"><button id="segM" class="on"></button><button id="segR"></button></div>
+    <div class="mnav" id="mnav"><button id="mprev" aria-label="prev">&#8249;</button><div id="mname"></div><button id="mnext" aria-label="next">&#8250;</button></div>
     <table class="cal"><thead><tr id="calHead"></tr></thead><tbody id="calBody"></tbody></table>
   </section>
 
@@ -264,38 +274,46 @@ if (tg) { try{ tg.ready(); tg.expand(); tg.setHeaderColor('#070b1e'); tg.setBack
 
 const CITIES = {
   "Toshkent":[41.2995,69.2401,"Ташкент"],"Samarqand":[39.6542,66.9597,"Самарканд"],"Buxoro":[39.7747,64.4286,"Бухара"],
-  "Andijon":[40.7821,72.3442,"Андижан"],"Namangan":[41.0011,71.6683,"Наманган"],"Farg'ona":[40.3864,71.7864,"Фергана"],
+  "Andijon":[40.7821,72.3442,"Андижан"],"Namangan":[40.9983,71.6726,"Наманган"],"Farg'ona":[40.3842,71.7843,"Фергана"],
   "Qarshi":[38.8606,65.7891,"Карши"],"Navoiy":[40.0844,65.3792,"Навои"],"Nukus":[42.4531,59.6103,"Нукус"],
-  "Urganch":[41.5506,60.6317,"Ургенч"],"Xiva":[41.3775,60.3640,"Хива"],"Termiz":[37.2242,67.2783,"Термез"],
-  "Jizzax":[40.1158,67.8422,"Джизак"],"Guliston":[40.4897,68.7842,"Гулистан"]
+  "Urganch":[41.5506,60.6317,"Ургенч"],"Termiz":[37.2242,67.2783,"Термез"],"Jizzax":[40.1158,67.8422,"Джизак"],
+  "Guliston":[40.4897,68.7842,"Гулистан"],"Xiva":[41.3775,60.3640,"Хива"],"Qo'qon":[40.5286,70.9425,"Коканд"],
+  "Marg'ilon":[40.4711,71.7247,"Маргилан"],"Angren":[41.0167,70.1436,"Ангрен"],"Chirchiq":[41.4689,69.5822,"Чирчик"],
+  "Olmaliq":[40.8447,69.5984,"Алмалык"],"Bekobod":[40.2208,69.2697,"Бекабад"],"Nurafshon":[41.0417,69.3578,"Нурафшон"],
+  "Yangiyo'l":[41.1117,69.0475,"Янгиюль"],"Shahrisabz":[39.0578,66.8342,"Шахрисабз"],"Kattaqo'rg'on":[39.8997,66.2564,"Каттакурган"],
+  "Urgut":[39.4000,67.2500,"Ургут"],"Denov":[38.2753,67.8986,"Денау"],"Zarafshon":[41.5750,64.2000,"Зарафшан"],
+  "Uchquduq":[42.1558,63.5559,"Учкудук"],"G'ijduvon":[40.1017,64.6819,"Гиждуван"],"Qo'ng'irot":[43.0722,58.9006,"Кунград"],
+  "Asaka":[40.6411,72.2386,"Асака"],"Shahrixon":[40.7114,72.0556,"Шахрихан"],"Chust":[41.0033,71.2372,"Чуст"],
+  "Pop":[40.8731,71.1103,"Пап"],"Rishton":[40.3569,71.2847,"Риштан"],"Yangiyer":[40.2750,68.8217,"Янгиер"]
 };
 const KEYS=["Fajr","Sunrise","Dhuhr","Asr","Maghrib","Isha"];
 const PR=["Fajr","Dhuhr","Asr","Maghrib","Isha"];
 const AR={Fajr:"الفجر",Sunrise:"الشروق",Dhuhr:"الظهر",Asr:"العصر",Maghrib:"المغرب",Isha:"العشاء"};
-const RAMADAN_START=new Date(2027,1,8);
+const FA=15.5, IA=15.25, D_SR=-0.75, D_ASR=-0.75, D_MG=4.0; // Muftiyat jadvaliga moslangan
+const RAMADAN=[[2027,2,9,2027,3,10],[2028,1,29,2028,2,27]]; // taxminiy, Muftiyat e'lon qilgach yangilanadi
 
 const T={
- uz:{tHome:"Vaqtlar",tCal:"Taqvim",tTas:"Tasbeh",tDua:"Duolar",
+ uz:{wd:["Dushanba","Seshanba","Chorshanba","Payshanba","Juma","Shanba","Yakshanba"],calM:"Oylik",calR:"Ramazon",rcd:["Kun","Sana","Saharlik","Iftor"],tHome:"Vaqtlar",tCal:"Taqvim",tTas:"Tasbeh",tDua:"Duolar",
   Fajr:"Bomdod",Sunrise:"Quyosh",Dhuhr:"Peshin",Asr:"Asr",Maghrib:"Shom",Isha:"Xufton",
   nextIs:"Keyingi namoz",left:"qoldi",soon:"Keyingi",
   sahar:"Saharlik tugashi",iftar:"Iftor vaqti",toSahar:"Saharlikgacha",toIftar:"Iftorgacha",
-  ramDay:n=>`Ramazon, ${n}-kun`,ramLeft:n=>`${30-n} kun qoldi`,ramSoonT:d=>`Ramazongacha ${d} kun`,ramSoonS:"Ramazon yaqinlashmoqda. Taxminiy boshlanish: 8-fevral",
+  ramDay:n=>`Ramazon, ${n}-kun`,ramLeft:n=>`${30-n} kun qoldi`,ramSoonT:d=>`Ramazongacha ${d} kun`,ramSoonS:"Ramazon yaqinlashmoqda. Taxminiy boshlanish: 9-fevral",
   months:["Yanvar","Fevral","Mart","Aprel","May","Iyun","Iyul","Avgust","Sentabr","Oktabr","Noyabr","Dekabr"],
-  cal:"Oylik taqvim",cd:["Kun","Bomdod","Quyosh","Peshin","Asr","Shom","Xufton"],
+  cal:"Taqvim",cd:["Kun","Bomdod","Quyosh","Peshin","Asr","Shom","Xufton"],
   tas:"Tasbeh",reset:"Tozalash",cycle:n=>`Aylanish: ${n}`,duaT:"Duolar",
   err:"Vaqtlar yuklanmadi. Internetni tekshiring.",retry:"Qayta urinish",
-  foot:"Vaqtlar Aladhan API'dan, Hanafiy mazhab bo'yicha. Masjid vaqtidan 1–3 daqiqa farq bo'lishi mumkin.",
+  foot:"Vaqtlar O'zbekiston Muftiyati jadvaliga mos hisoblangan, 1 daqiqagacha farq bo'lishi mumkin.",
   zikr:["Subhanalloh","Alhamdulillah","Allohu akbar","La ilaha illalloh"]},
- ru:{tHome:"Время",tCal:"Календарь",tTas:"Тасбих",tDua:"Дуа",
+ ru:{wd:["Понедельник","Вторник","Среда","Четверг","Пятница","Суббота","Воскресенье"],calM:"Месяц",calR:"Рамадан",rcd:["День","Дата","Сухур","Ифтар"],tHome:"Время",tCal:"Календарь",tTas:"Тасбих",tDua:"Дуа",
   Fajr:"Фаджр",Sunrise:"Восход",Dhuhr:"Зухр",Asr:"Аср",Maghrib:"Магриб",Isha:"Иша",
   nextIs:"Следующий намаз",left:"осталось",soon:"Далее",
   sahar:"Конец сухура",iftar:"Время ифтара",toSahar:"До сухура",toIftar:"До ифтара",
-  ramDay:n=>`Рамадан, ${n}-й день`,ramLeft:n=>`осталось ${30-n} дн.`,ramSoonT:d=>`До Рамадана ${d} дн.`,ramSoonS:"Рамадан приближается. Ориентировочное начало: 8 февраля",
+  ramDay:n=>`Рамадан, ${n}-й день`,ramLeft:n=>`осталось ${30-n} дн.`,ramSoonT:d=>`До Рамадана ${d} дн.`,ramSoonS:"Рамадан приближается. Ориентировочное начало: 9 февраля",
   months:["Января","Февраля","Марта","Апреля","Мая","Июня","Июля","Августа","Сентября","Октября","Ноября","Декабря"],
-  cal:"Календарь на месяц",cd:["День","Фаджр","Восход","Зухр","Аср","Магриб","Иша"],
+  cal:"Календарь",cd:["День","Фаджр","Восход","Зухр","Аср","Магриб","Иша"],
   tas:"Тасбих",reset:"Сбросить",cycle:n=>`Кругов: ${n}`,duaT:"Дуа",
   err:"Не удалось загрузить время. Проверьте интернет.",retry:"Повторить",
-  foot:"Время по Aladhan API, ханафитский мазхаб. Возможна разница с мечетью в 1–3 минуты.",
+  foot:"Время рассчитано по таблицам Муфтията Узбекистана, возможна разница до 1 минуты.",
   zikr:["Субханаллах","Альхамдулиллах","Аллаху акбар","Ля илаха илляллах"]}
 };
 const ZIKR=[["سُبْحَانَ اللّٰه",33],["الْحَمْدُ لِلّٰه",33],["اللّٰهُ أَكْبَر",34],["لَا إِلٰهَ إِلَّا اللّٰه",100]];
@@ -329,27 +347,34 @@ function haptic(t){ if(tg&&tg.HapticFeedback){ try{ t==="ok"?tg.HapticFeedback.n
 /* stars */
 (function(){const w=$("stars");let h="";for(let i=0;i<38;i++){const s=(Math.random()*1.8+.8).toFixed(1);h+=`<i style="left:${(Math.random()*100).toFixed(1)}%;top:${(Math.random()*62).toFixed(1)}%;width:${s}px;height:${s}px;--t:${(Math.random()*3+2).toFixed(1)}s;--d:-${(Math.random()*5).toFixed(1)}s"></i>`}w.innerHTML=h})();
 
-/* data */
-async function fetchTimings(){
-  const [lat,lng]=CITIES[city]; const d=nowTash();
-  const key="cache2_"+city+"_"+d.toDateString();
-  const url=`https://api.aladhan.com/v1/timings/${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}?latitude=${lat}&longitude=${lng}&method=3&school=1&timezonestring=Asia/Tashkent`;
-  try{
-    const r=await fetch(url); const j=await r.json();
-    timings=j.data.timings; hijri=j.data.date.hijri; save(key,JSON.stringify(j.data));
-  }catch(e){
-    try{const c=JSON.parse(localStorage.getItem(key));timings=c.timings;hijri=c.date.hijri}catch(_){timings=null}
-  }
-  renderHome();
+/* data: hisoblash (tashqi API kerak emas) */
+function sunpos(y,m,d){
+  const jd=Date.UTC(y,m-1,d)/86400000+2440587.5+7/24, T=(jd-2451545.0)/36525, R=Math.PI/180;
+  const L0=(((280.46646+T*(36000.76983+T*0.0003032))%360)+360)%360;
+  const M=357.52911+T*(35999.05029-0.0001537*T), e=0.016708634-T*(0.000042037+0.0000001267*T), Mr=M*R;
+  const C=(1.914602-T*(0.004817+0.000014*T))*Math.sin(Mr)+(0.019993-0.000101*T)*Math.sin(2*Mr)+0.000289*Math.sin(3*Mr);
+  const om=125.04-1934.136*T, lam=L0+C-0.00569-0.00478*Math.sin(om*R);
+  const eps0=23+(26+((21.448-T*(46.815+T*(0.00059-T*0.001813))))/60)/60, eps=eps0+0.00256*Math.cos(om*R);
+  const dec=Math.asin(Math.sin(eps*R)*Math.sin(lam*R))/R;
+  const y2=Math.tan(eps*R/2)**2, L0r=L0*R;
+  const eot=4*(y2*Math.sin(2*L0r)-2*e*Math.sin(Mr)+4*e*y2*Math.sin(Mr)*Math.cos(2*L0r)-0.5*y2*y2*Math.sin(4*L0r)-1.25*e*e*Math.sin(2*Mr))/R;
+  return [dec,eot];
 }
-async function fetchCal(){
-  const [lat,lng]=CITIES[city]; const d=nowTash();
-  try{
-    const r=await fetch(`https://api.aladhan.com/v1/calendar/${d.getFullYear()}/${d.getMonth()+1}?latitude=${lat}&longitude=${lng}&method=3&school=1&timezonestring=Asia/Tashkent`);
-    cal=(await r.json()).data;
-  }catch(e){cal=null}
-  renderCal();
+function calcTimes(c,y,m,d){
+  const [lat,lon]=CITIES[c], [dec,eot]=sunpos(y,m,d), R=Math.PI/180;
+  const noon=12*60+5*60-lon*4-eot, p=lat*R, de=dec*R;
+  const ang=a=>{const v=(Math.sin(a*R)-Math.sin(p)*Math.sin(de))/(Math.cos(p)*Math.cos(de));return Math.acos(Math.max(-1,Math.min(1,v)))/R*4};
+  const asrAlt=Math.atan(1/(2+Math.tan(Math.abs(p-de))))/R;
+  const raw={Fajr:noon-ang(-FA),Sunrise:noon-ang(-0.833)+D_SR,Dhuhr:noon,Asr:noon+ang(asrAlt)+D_ASR,Maghrib:noon+ang(-0.833)+D_MG,Isha:noon+ang(-IA)};
+  const o={};for(const k in raw)o[k]=Math.floor(raw[k]+0.5);return o;
 }
+const fmtMin=x=>{x=((x%1440)+1440)%1440;return pad(Math.floor(x/60))+":"+pad(x%60)};
+function dayTimings(c,y,m,d){const t=calcTimes(c,y,m,d),o={};KEYS.forEach(k=>o[k]=fmtMin(t[k]));return o}
+function ramDay(y,m,d){const t=Date.UTC(y,m-1,d);for(const r of RAMADAN){const a=Date.UTC(r[0],r[1]-1,r[2]),b=Date.UTC(r[3],r[4]-1,r[5]);if(t>=a&&t<=b)return Math.round((t-a)/864e5)+1}return 0}
+function nextRam(y,m,d){const t=Date.UTC(y,m-1,d);for(const r of RAMADAN){if(t<=Date.UTC(r[3],r[4]-1,r[5]))return r}return null}
+let calYM=null, calMode="M";
+function fetchTimings(){const d=nowTash();timings=dayTimings(city,d.getFullYear(),d.getMonth()+1,d.getDate());hijri=null;renderHome()}
+function fetchCal(){renderCal()}
 
 /* schedule */
 function schedule(){
@@ -373,16 +398,18 @@ function renderHome(){
     $("retry").onclick=()=>fetchTimings();
     dEl.textContent="";return;
   }
-  dEl.innerHTML=`${n.getDate()} ${L.months[n.getMonth()]}${hijri?` · <span class="ar" dir="ltr">${hijri.day} ${hijri.month.ar||hijri.month.en} ${hijri.year}</span>`:""}`;
+  dEl.innerHTML=`${L.wd[(n.getDay()+6)%7]}, ${n.getDate()} ${L.months[n.getMonth()]} ${n.getFullYear()} · <span id="clk"></span>`;
 
   // ramadan card
   const ram=$("ram"); ram.style.display="block";
-  const isRam=hijri&&+hijri.month.number===9;
+  const rdn=ramDay(n.getFullYear(),n.getMonth()+1,n.getDate());
+  const isRam=rdn>0;
   if(isRam){
-    const day=+hijri.day;
+    const day=rdn;
     ram.innerHTML=`<div class="ram-h"><div class="ram-t">${L.ramDay(day)}</div><div class="ram-s">${L.ramLeft(day)}</div></div><div class="dots">${Array.from({length:30},(_,i)=>`<i class="${i<day?"on":""} ${i===day-1?"now":""}"></i>`).join("")}</div>`;
   }else{
-    const diff=Math.ceil((RAMADAN_START-new Date(n.getFullYear(),n.getMonth(),n.getDate()))/864e5);
+    const nr=nextRam(n.getFullYear(),n.getMonth()+1,n.getDate());
+    const diff=nr?Math.round((Date.UTC(nr[0],nr[1]-1,nr[2])-Date.UTC(n.getFullYear(),n.getMonth(),n.getDate()))/864e5):0;
     if(diff>0&&diff<400) ram.innerHTML=`<div class="ram-h"><div class="ram-t">${L.ramSoonT(diff)}</div></div><div class="ram-s" style="margin-top:6px">${L.ramSoonS}</div>`;
     else ram.style.display="none";
   }
@@ -402,6 +429,7 @@ function renderHome(){
 }
 function tick(){
   if(!timings)return; const L=tr(); const s=schedule();
+  const ck=$("clk"); if(ck){const w=nowTash();ck.textContent=pad(w.getHours())+":"+pad(w.getMinutes())+":"+pad(w.getSeconds())}
   $("nlabel").textContent=L.nextIs; $("nname").textContent=L[s.k]; $("narab").textContent=AR[s.k];
   $("count").textContent=fmt(s.left);
   const p=Math.min(1,Math.max(0,s.passed/s.total)); const prog=$("prog");
@@ -415,13 +443,32 @@ function tick(){
 
 /* calendar */
 function renderCal(){
-  const L=tr();
-  $("calHead").innerHTML=L.cd.map(x=>`<th>${x}</th>`).join("");
-  if(!cal){$("calBody").innerHTML="";return}
-  const today=nowTash().getDate();
-  $("calBody").innerHTML=cal.map(x=>{const t=x.timings,dd=+x.date.gregorian.day;
-    return `<tr class="${dd===today?"today":""}"><td>${dd}</td>${KEYS.map(k=>`<td>${clean(t[k])}</td>`).join("")}</tr>`}).join("");
+  const L=tr(), n=nowTash();
+  if(!calYM)calYM=[n.getFullYear(),n.getMonth()+1];
+  $("calTitle").textContent=L.cal; $("segM").textContent=L.calM; $("segR").textContent=L.calR;
+  $("segM").classList.toggle("on",calMode==="M"); $("segR").classList.toggle("on",calMode==="R");
+  $("mnav").style.display=calMode==="M"?"flex":"none";
+  let h="";
+  if(calMode==="M"){
+    const [y,m]=calYM; $("mname").textContent=`${L.months[m-1]} ${y}`;
+    $("calHead").innerHTML=L.cd.map(x=>`<th>${x}</th>`).join("");
+    const days=new Date(y,m,0).getDate(), cur=(y===n.getFullYear()&&m===n.getMonth()+1);
+    for(let d=1;d<=days;d++){const t=dayTimings(city,y,m,d), rd=ramDay(y,m,d);
+      h+=`<tr class="${cur&&d===n.getDate()?"today":""} ${rd?"ramr":""}"><td>${d}</td>${KEYS.map(k=>`<td>${t[k]}</td>`).join("")}</tr>`}
+  }else{
+    const r=nextRam(n.getFullYear(),n.getMonth()+1,n.getDate())||RAMADAN[0], a0=Date.UTC(r[0],r[1]-1,r[2]);
+    const trd=ramDay(n.getFullYear(),n.getMonth()+1,n.getDate());
+    $("calHead").innerHTML=L.rcd.map(x=>`<th>${x}</th>`).join("");
+    for(let i=0;i<30;i++){const d=new Date(a0+i*864e5), t=dayTimings(city,d.getUTCFullYear(),d.getUTCMonth()+1,d.getUTCDate());
+      h+=`<tr class="${trd===i+1?"today":""}"><td>${i+1}</td><td>${pad(d.getUTCDate())}.${pad(d.getUTCMonth()+1)}</td><td>${t.Fajr}</td><td>${t.Maghrib}</td></tr>`}
+  }
+  $("calBody").innerHTML=h;
 }
+function shiftMonth(k){let [y,m]=calYM;m+=k;if(m<1){m=12;y--}if(m>12){m=1;y++}calYM=[y,m];renderCal()}
+$("segM").onclick=()=>{calMode="M";renderCal();haptic()};
+$("segR").onclick=()=>{calMode="R";renderCal();haptic()};
+$("mprev").onclick=()=>{shiftMonth(-1);haptic()};
+$("mnext").onclick=()=>{shiftMonth(1);haptic()};
 
 /* tasbeh */
 let zi=+load("zi",0), cnt=+load("cnt",0), cycles=+load("cyc",0);
